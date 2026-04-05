@@ -55,17 +55,12 @@ export function decodeVarlen(data: Uint8Array, count: number): (Uint8Array | nul
   return result;
 }
 
-/** Synchronous gzip decompression using DecompressionStream (browser) or fflate fallback */
-function gunzipSync(data: Uint8Array): Uint8Array {
-  // Node.js path
-  if (typeof globalThis.DecompressionStream === 'undefined') {
-    // Fallback: use zlib in Node
-    const { gunzipSync: nodeGunzip } = require('node:zlib') as typeof import('node:zlib');
-    return new Uint8Array(nodeGunzip(data));
-  }
-  // Browser: DecompressionStream is async, so we provide a sync wrapper
-  // that works with pre-loaded data via Response
-  throw new Error('Synchronous gzip not supported in browser — use decodeVarlenAsync');
+/**
+ * Synchronous gzip is not available in browsers.
+ * Use {@link decodeVarlenAsync} for gzip-compressed columns.
+ */
+function gunzipSync(_data: Uint8Array): Uint8Array {
+  throw new Error('Synchronous gzip not supported — use decodeVarlenAsync() instead');
 }
 
 /** Async gzip decompression using native DecompressionStream (browser) */
@@ -96,7 +91,7 @@ export async function decodeVarlenAsync(
     const compressed = data.subarray(pos, pos + compressedLen);
     const ds = new DecompressionStream('gzip');
     const writer = ds.writable.getWriter();
-    writer.write(compressed);
+    writer.write(compressed as unknown as BufferSource);
     writer.close();
     const reader = ds.readable.getReader();
     const chunks: Uint8Array[] = [];
