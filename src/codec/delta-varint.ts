@@ -1,7 +1,7 @@
 /**
  * Delta-of-delta + zigzag varint decoder for long columns (timestamps).
- * Values are stored as: first value (8 bytes LE) + first delta (zigzag varint) +
- * subsequent delta-of-deltas (zigzag varints).
+ * Uses BigInt internally for precision with large values (nanosecond timestamps),
+ * then converts to Float64Array for output.
  */
 export function decodeDeltaVarint(data: Uint8Array, count: number): Float64Array {
   if (count === 0) return new Float64Array(0);
@@ -10,38 +10,38 @@ export function decodeDeltaVarint(data: Uint8Array, count: number): Float64Array
   const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
   let pos = 0;
 
-  // First value: 8 bytes LE (read as two 32-bit ints to stay in Number precision)
-  const lo = view.getUint32(pos, true);
-  const hi = view.getInt32(pos + 4, true);
-  result[0] = hi * 0x100000000 + lo;
+  // First value: 8 bytes LE as BigInt
+  const first = view.getBigInt64(pos, true);
+  result[0] = Number(first);
   pos += 8;
 
   if (count > 1) {
-    let [prevDelta, newPos] = readZigzagVarint(data, pos);
+    let [prevDelta, newPos] = readZigzagVarintBig(data, pos);
     pos = newPos;
-    result[1] = result[0] + prevDelta;
+    let current = first + prevDelta;
+    result[1] = Number(current);
 
     for (let i = 2; i < count; i++) {
-      let dod: number;
-      [dod, pos] = readZigzagVarint(data, pos);
-      const delta = prevDelta + dod;
-      result[i] = result[i - 1] + delta;
-      prevDelta = delta;
+      let dod: bigint;
+      [dod, pos] = readZigzagVarintBig(data, pos);
+      prevDelta = prevDelta + dod;
+      current = current + prevDelta;
+      result[i] = Number(current);
     }
   }
 
   return result;
 }
 
-function readZigzagVarint(data: Uint8Array, pos: number): [number, number] {
-  let result = 0;
-  let shift = 0;
+function readZigzagVarintBig(data: Uint8Array, pos: number): [bigint, number] {
+  let result = 0n;
+  let shift = 0n;
   while (true) {
     const b = data[pos++];
-    result |= (b & 0x7f) << shift;
+    result |= BigInt(b & 0x7f) << shift;
     if ((b & 0x80) === 0) break;
-    shift += 7;
+    shift += 7n;
   }
-  // Zigzag decode
-  return [(result >>> 1) ^ -(result & 1), pos];
+  // Zigzag decode: (n >>> 1) ^ -(n & 1)
+  return [(result >> 1n) ^ -(result & 1n), pos];
 }
