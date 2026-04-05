@@ -1,0 +1,48 @@
+{
+  "name": "@qtsurfer/reef",
+  "version": "0.5.0",
+  "description": "TypeScript reader for the Reef columnar time series format",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fzstd": "^0.1.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/QTSurfer/reef-ts.git"
+  },
+  "homepage": "https://github.com/QTSurfer/reef-ts",
+  "keywords": [
+    "reef",
+    "time-series",
+    "columnar",
+    "compression",
+    "alp",
+    "financial-data",
+    "binary-format"
+  ]
+}
