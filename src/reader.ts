@@ -10,6 +10,8 @@ import { decodeDeltaVarint } from './codec/delta-varint.js';
 import { decodeAlp } from './codec/alp.js';
 import { decodeVarlen, decodeVarlenAsync } from './codec/varlen.js';
 import { decodeRawLongs, decodeRawDoubles } from './codec/raw.js';
+import { decodeGorilla } from './codec/gorilla.js';
+import { decodePongo } from './codec/pongo.js';
 
 export interface ColumnInfo {
   name: string;
@@ -182,6 +184,10 @@ export class ReefReader {
     switch (codec) {
       case Codec.ALP:
         return decodeAlp(colData);
+      case Codec.GORILLA:
+        return decodeGorilla(colData, count);
+      case Codec.PONGO:
+        return decodePongo(colData, count);
       case Codec.RAW:
         return decodeRawDoubles(colData, count);
       default:

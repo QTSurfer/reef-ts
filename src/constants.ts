@@ -23,6 +23,8 @@ export enum Codec {
   VARLEN = 3,
   VARLEN_ZSTD = 4,
   VARLEN_GZIP = 5,
+  GORILLA = 6,
+  PONGO = 7,
 }
 
 export const FLAG_HAS_EVENTS = 1;
