@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { ReefReader, DataType, Codec } from '../src/index.js';
+import { LastraReader, DataType, Codec } from '../src/index.js';
 import { execSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -7,23 +7,23 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const FIXTURE_DIR = join(__dirname, 'fixtures');
-const REEF_JAVA_DIR = join(__dirname, '..', '..', 'qtsurfer-reef');
+const REEF_JAVA_DIR = join(__dirname, '..', '..', 'qtsurfer-lastra');
 
-describe('ReefReader', () => {
+describe('LastraReader', () => {
   beforeAll(() => {
-    // Generate test fixtures from Java ReefWriter
-    if (!existsSync(join(FIXTURE_DIR, 'series-only.reef'))) {
+    // Generate test fixtures from Java LastraWriter
+    if (!existsSync(join(FIXTURE_DIR, 'series-only.lastra'))) {
       execSync(
-        `cd ${REEF_JAVA_DIR} && mvn -q compile exec:java -Dexec.mainClass=com.wualabs.qtsurfer.reef.ReefTestFixtureGenerator -Dexec.classpathScope=test -Dexec.args="${FIXTURE_DIR}" 2>/dev/null || true`,
+        `cd ${REEF_JAVA_DIR} && mvn -q compile exec:java -Dexec.mainClass=com.wualabs.qtsurfer.lastra.LastraTestFixtureGenerator -Dexec.classpathScope=test -Dexec.args="${FIXTURE_DIR}" 2>/dev/null || true`,
       );
     }
   });
 
   it('should parse header and column descriptors', () => {
-    const data = readFixture('series-only.reef');
+    const data = readFixture('series-only.lastra');
     if (!data) return; // skip if no fixture
 
-    const reader = new ReefReader(data);
+    const reader = new LastraReader(data);
     expect(reader.seriesRowCount).toBe(100);
     expect(reader.seriesColumns.length).toBe(2);
     expect(reader.seriesColumns[0].name).toBe('ts');
@@ -35,10 +35,10 @@ describe('ReefReader', () => {
   });
 
   it('should decode series timestamps', () => {
-    const data = readFixture('series-only.reef');
+    const data = readFixture('series-only.lastra');
     if (!data) return;
 
-    const reader = new ReefReader(data);
+    const reader = new LastraReader(data);
     const ts = reader.readSeriesLong('ts');
     expect(ts.length).toBe(100);
     // Timestamps should be monotonically increasing
@@ -48,10 +48,10 @@ describe('ReefReader', () => {
   });
 
   it('should decode series doubles', () => {
-    const data = readFixture('series-only.reef');
+    const data = readFixture('series-only.lastra');
     if (!data) return;
 
-    const reader = new ReefReader(data);
+    const reader = new LastraReader(data);
     const close = reader.readSeriesDouble('close');
     expect(close.length).toBe(100);
     // Prices should be in reasonable range
@@ -62,20 +62,20 @@ describe('ReefReader', () => {
   });
 
   it('should read column metadata', () => {
-    const data = readFixture('with-metadata.reef');
+    const data = readFixture('with-metadata.lastra');
     if (!data) return;
 
-    const reader = new ReefReader(data);
+    const reader = new LastraReader(data);
     const ema = reader.getSeriesColumn('ema1');
     expect(ema.metadata.indicator).toBe('ema');
     expect(ema.metadata.periods).toBe('10');
   });
 
   it('should read events section', () => {
-    const data = readFixture('with-events.reef');
+    const data = readFixture('with-events.lastra');
     if (!data) return;
 
-    const reader = new ReefReader(data);
+    const reader = new LastraReader(data);
     expect(reader.eventsRowCount).toBeGreaterThan(0);
 
     const eventTs = reader.readEventLong('ts');

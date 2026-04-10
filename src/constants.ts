@@ -1,8 +1,8 @@
-/** Magic bytes: "REEF" in LE */
-export const MAGIC = 0x52454546;
+/** Magic bytes: "LAST" in LE */
+export const MAGIC = 0x4C415354;
 
-/** Footer sentinel: "REF!" in LE */
-export const FOOTER_MAGIC = 0x52454621;
+/** Footer sentinel: "LAS!" in LE */
+export const FOOTER_MAGIC = 0x4C415321;
 
 /** Current format version */
 export const VERSION = 1;

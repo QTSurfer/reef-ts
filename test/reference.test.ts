@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { ReefReader, DataType, Codec } from '../src/index.js';
+import { LastraReader, DataType, Codec } from '../src/index.js';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const FIXTURE = join(__dirname, 'fixtures', 'reference.reef');
+const FIXTURE = join(__dirname, 'fixtures', 'reference.lastra');
 
 /**
  * Reference fixture test: validates the TS reader against known values
- * produced by the Java ReefWriter (ReefReferenceFixtureTest.java).
+ * produced by the Java LastraWriter (LastraReferenceFixtureTest.java).
  *
  * Data: Random(42) for close, Random(99) for rsi, baseTs=1711152000000000000ns
  */
@@ -22,7 +22,7 @@ describe('Reference fixture (Java writer → TS reader)', () => {
 
   it('should parse header', () => {
     if (!data) return;
-    const r = new ReefReader(data);
+    const r = new LastraReader(data);
     expect(r.seriesRowCount).toBe(100);
     expect(r.eventsRowCount).toBe(5);
     expect(r.seriesColumns).toHaveLength(3);
@@ -31,7 +31,7 @@ describe('Reference fixture (Java writer → TS reader)', () => {
 
   it('should read series column descriptors', () => {
     if (!data) return;
-    const r = new ReefReader(data);
+    const r = new LastraReader(data);
     expect(r.seriesColumns[0]).toMatchObject({ name: 'ts', dataType: DataType.LONG, codec: Codec.DELTA_VARINT });
     expect(r.seriesColumns[1]).toMatchObject({ name: 'close', dataType: DataType.DOUBLE, codec: Codec.ALP });
     expect(r.seriesColumns[2]).toMatchObject({ name: 'rsi1', dataType: DataType.DOUBLE, codec: Codec.ALP });
@@ -39,7 +39,7 @@ describe('Reference fixture (Java writer → TS reader)', () => {
 
   it('should read column metadata', () => {
     if (!data) return;
-    const r = new ReefReader(data);
+    const r = new LastraReader(data);
     const rsi = r.getSeriesColumn('rsi1');
     expect(rsi.metadata.indicator).toBe('rsi');
     expect(rsi.metadata.periods).toBe('14');
@@ -47,7 +47,7 @@ describe('Reference fixture (Java writer → TS reader)', () => {
 
   it('should decode timestamps with exact values', () => {
     if (!data) return;
-    const r = new ReefReader(data);
+    const r = new LastraReader(data);
     const ts = r.readSeriesLong('ts');
     expect(ts).toHaveLength(100);
     expect(ts[0]).toBe(1_711_152_000_000_000_000);
@@ -60,7 +60,7 @@ describe('Reference fixture (Java writer → TS reader)', () => {
 
   it('should decode close prices with exact values', () => {
     if (!data) return;
-    const r = new ReefReader(data);
+    const r = new LastraReader(data);
     const close = r.readSeriesDouble('close');
     expect(close).toHaveLength(100);
     // Reference values from Java: Random(42)
@@ -76,7 +76,7 @@ describe('Reference fixture (Java writer → TS reader)', () => {
 
   it('should decode rsi with exact values', () => {
     if (!data) return;
-    const r = new ReefReader(data);
+    const r = new LastraReader(data);
     const rsi = r.readSeriesDouble('rsi1');
     expect(rsi).toHaveLength(100);
     // Reference values from Java: Random(99)
@@ -91,7 +91,7 @@ describe('Reference fixture (Java writer → TS reader)', () => {
 
   it('should decode event timestamps', () => {
     if (!data) return;
-    const r = new ReefReader(data);
+    const r = new LastraReader(data);
     const evTs = r.readEventLong('ts');
     expect(evTs).toHaveLength(5);
     const base = 1_711_152_000_000_000_000;
@@ -104,7 +104,7 @@ describe('Reference fixture (Java writer → TS reader)', () => {
 
   it('should decode event types', () => {
     if (!data) return;
-    const r = new ReefReader(data);
+    const r = new LastraReader(data);
     const types = r.readEventBinary('type');
     expect(types).toHaveLength(5);
     const dec = new TextDecoder();
@@ -117,7 +117,7 @@ describe('Reference fixture (Java writer → TS reader)', () => {
 
   it('should decode event data with nulls', () => {
     if (!data) return;
-    const r = new ReefReader(data);
+    const r = new LastraReader(data);
     const evData = r.readEventBinary('data');
     expect(evData).toHaveLength(5);
     const dec = new TextDecoder();

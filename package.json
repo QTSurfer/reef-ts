@@ -1,7 +1,7 @@
 {
-  "name": "@qtsurfer/reef",
+  "name": "@qtsurfer/lastra",
   "version": "0.7.2",
-  "description": "TypeScript reader for the Reef columnar time series format",
+  "description": "TypeScript reader for the Lastra columnar time series format",
   "license": "Apache-2.0",
   "author": "QTSurfer (https://github.com/QTSurfer)",
   "type": "module",
@@ -38,17 +38,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/QTSurfer/reef-ts.git"
+    "url": "git+https://github.com/QTSurfer/lastra-ts.git"
   },
   "bugs": {
-    "url": "https://github.com/QTSurfer/reef-ts/issues"
+    "url": "https://github.com/QTSurfer/lastra-ts/issues"
   },
-  "homepage": "https://github.com/QTSurfer/reef-ts",
+  "homepage": "https://github.com/QTSurfer/lastra-ts",
   "engines": {
     "node": ">=18"
   },
   "keywords": [
-    "reef",
+    "lastra",
     "time-series",
     "columnar",
     "compression",

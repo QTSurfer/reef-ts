@@ -1,17 +1,17 @@
 /**
- * Bridge between ReefReader and Apache Arrow.
+ * Bridge between LastraReader and Apache Arrow.
  *
- * Converts decoded Reef series data into an Arrow Table, enabling
+ * Converts decoded Lastra series data into an Arrow Table, enabling
  * interoperability with any Arrow-compatible tool (e.g. DuckDB-WASM,
  * Perspective, Arquero, Observable Plot).
  *
  * @example
  * ```ts
- * import { ReefReader } from '@qtsurfer/reef';
- * import { reefToArrow } from '@qtsurfer/reef/arrow';
+ * import { LastraReader } from '@qtsurfer/lastra';
+ * import { lastraToArrow } from '@qtsurfer/lastra/arrow';
  *
- * const reader = new ReefReader(buffer);
- * const table = reefToArrow(reader);
+ * const reader = new LastraReader(buffer);
+ * const table = lastraToArrow(reader);
  * ```
  */
 
@@ -22,18 +22,18 @@ import {
   type Table,
   type TypeMap,
 } from 'apache-arrow';
-import { ReefReader, type ColumnInfo } from './reader.js';
+import { LastraReader, type ColumnInfo } from './reader.js';
 import { DataType } from './constants.js';
 
 /**
- * Converts all series columns from a ReefReader into an Arrow Table.
+ * Converts all series columns from a LastraReader into an Arrow Table.
  *
  * Type mapping:
  * - LONG → Float64 (Arrow Int64 requires BigInt; Float64 preserves millisecond timestamps)
  * - DOUBLE → Float64
  * - BINARY → Utf8 (decoded as UTF-8 strings)
  */
-export function reefToArrow(reader: ReefReader): Table {
+export function lastraToArrow(reader: LastraReader): Table {
   const arrays: Record<string, Float64Array | string[]> = {};
 
   for (const col of reader.seriesColumns) {
@@ -57,12 +57,12 @@ export function reefToArrow(reader: ReefReader): Table {
 }
 
 /**
- * Converts selected series columns from a ReefReader into an Arrow Table.
+ * Converts selected series columns from a LastraReader into an Arrow Table.
  *
  * @param columnNames - columns to include (others are skipped, not decompressed)
  */
-export function reefToArrowColumns(
-  reader: ReefReader,
+export function lastraToArrowColumns(
+  reader: LastraReader,
   columnNames: string[],
 ): Table {
   const arrays: Record<string, Float64Array | string[]> = {};
@@ -89,8 +89,8 @@ export function reefToArrowColumns(
 }
 
 /**
- * Convenience: read a Reef buffer and return an Arrow Table in one call.
+ * Convenience: read a Lastra buffer and return an Arrow Table in one call.
  */
-export function readReefAsArrow(buffer: ArrayBuffer | Uint8Array): Table {
-  return reefToArrow(new ReefReader(buffer));
+export function readLastraAsArrow(buffer: ArrayBuffer | Uint8Array): Table {
+  return lastraToArrow(new LastraReader(buffer));
 }

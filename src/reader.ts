@@ -27,21 +27,21 @@ interface ColumnLocation {
 }
 
 /**
- * Reef file reader for TypeScript/JavaScript.
+ * Lastra file reader for TypeScript/JavaScript.
  *
- * Reads `.reef` files written by the Java ReefWriter.
+ * Reads `.lastra` files written by the Java ReefWriter.
  * Supports selective column access — only requested columns are decompressed.
  * Verifies per-column CRC32 checksums when present (FLAG_HAS_CHECKSUMS).
  *
  * @example
  * ```ts
- * const reader = new ReefReader(buffer);
+ * const reader = new LastraReader(buffer);
  * const ts = reader.readSeriesLong('ts');
  * const close = reader.readSeriesDouble('close');
  * const meta = reader.getSeriesColumn('ema1').metadata;
  * ```
  */
-export class ReefReader {
+export class LastraReader {
   private readonly data: Uint8Array;
   private readonly view: DataView;
   readonly seriesRowCount: number;
@@ -64,7 +64,7 @@ export class ReefReader {
     const magic = this.view.getUint32(pos, true);
     pos += 4;
     if (magic !== MAGIC) {
-      throw new Error(`Not a Reef file (magic: 0x${magic.toString(16)})`);
+      throw new Error(`Not a Lastra file (magic: 0x${magic.toString(16)})`);
     }
     const version = this.view.getUint16(pos, true);
     pos += 2;
@@ -145,7 +145,7 @@ export class ReefReader {
 
       const footerMagic = fv.getUint32(fp, true);
       if (footerMagic !== FOOTER_MAGIC) {
-        throw new Error('Invalid Reef footer');
+        throw new Error('Invalid Lastra footer');
       }
     }
   }
