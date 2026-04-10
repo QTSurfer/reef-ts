@@ -53,6 +53,7 @@
     "compression",
     "alp",
     "financial-data",
+    "iot",
     "binary-format",
     "zstd",
     "typescript"
