@@ -3,6 +3,7 @@ import {
   FOOTER_MAGIC,
   FLAG_HAS_EVENTS,
   FLAG_HAS_FOOTER,
+  FLAG_HAS_CHECKSUMS,
   DataType,
   Codec,
 } from './constants.js';
@@ -30,6 +31,7 @@ interface ColumnLocation {
  *
  * Reads `.reef` files written by the Java ReefWriter.
  * Supports selective column access — only requested columns are decompressed.
+ * Verifies per-column CRC32 checksums when present (FLAG_HAS_CHECKSUMS).
  *
  * @example
  * ```ts
@@ -46,8 +48,11 @@ export class ReefReader {
   readonly eventsRowCount: number;
   readonly seriesColumns: ColumnInfo[];
   readonly eventColumns: ColumnInfo[];
+  readonly hasChecksums: boolean;
   private readonly seriesLocs: ColumnLocation[];
   private readonly eventLocs: ColumnLocation[];
+  private readonly seriesCrcs: number[];
+  private readonly eventCrcs: number[];
 
   constructor(buffer: ArrayBuffer | Uint8Array) {
     this.data = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
@@ -106,6 +111,43 @@ export class ReefReader {
       this.eventLocs.push({ pos, len });
       pos += len;
     }
+
+    // Footer: offsets + optional CRCs
+    this.hasChecksums = (flags & FLAG_HAS_CHECKSUMS) !== 0;
+    this.seriesCrcs = [];
+    this.eventCrcs = [];
+
+    const hasFooter = (flags & FLAG_HAS_FOOTER) !== 0;
+    if (hasFooter) {
+      const totalCols = seriesColCount + this.eventColumns.length;
+      let footerInts = totalCols; // offsets
+      if (this.hasChecksums) footerInts += totalCols; // CRCs
+      footerInts += 1; // REF! magic
+
+      const footerStart = this.data.byteLength - footerInts * 4;
+      const fv = new DataView(this.data.buffer, this.data.byteOffset + footerStart, footerInts * 4);
+      let fp = 0;
+
+      // Skip offsets (we already computed positions by scanning)
+      fp += totalCols * 4;
+
+      // Read CRCs
+      if (this.hasChecksums) {
+        for (let i = 0; i < seriesColCount; i++) {
+          this.seriesCrcs.push(fv.getUint32(fp, true));
+          fp += 4;
+        }
+        for (let i = 0; i < this.eventColumns.length; i++) {
+          this.eventCrcs.push(fv.getUint32(fp, true));
+          fp += 4;
+        }
+      }
+
+      const footerMagic = fv.getUint32(fp, true);
+      if (footerMagic !== FOOTER_MAGIC) {
+        throw new Error('Invalid Reef footer');
+      }
+    }
   }
 
   // --- Series readers ---
@@ -113,18 +155,21 @@ export class ReefReader {
   readSeriesLong(name: string): Float64Array {
     const [idx, col] = this.findColumn(this.seriesColumns, name);
     const loc = this.seriesLocs[idx];
+    this.verifyCrc(loc, this.seriesCrcs, idx, name);
     return this.decodeLong(loc, this.seriesRowCount, col.codec);
   }
 
   readSeriesDouble(name: string): Float64Array {
     const [idx, col] = this.findColumn(this.seriesColumns, name);
     const loc = this.seriesLocs[idx];
+    this.verifyCrc(loc, this.seriesCrcs, idx, name);
     return this.decodeDouble(loc, this.seriesRowCount, col.codec);
   }
 
   readSeriesBinary(name: string): (Uint8Array | null)[] {
     const [idx] = this.findColumn(this.seriesColumns, name);
     const loc = this.seriesLocs[idx];
+    this.verifyCrc(loc, this.seriesCrcs, idx, name);
     return decodeVarlen(this.data.subarray(loc.pos, loc.pos + loc.len), this.seriesRowCount);
   }
 
@@ -133,18 +178,21 @@ export class ReefReader {
   readEventLong(name: string): Float64Array {
     const [idx, col] = this.findColumn(this.eventColumns, name);
     const loc = this.eventLocs[idx];
+    this.verifyCrc(loc, this.eventCrcs, idx, name);
     return this.decodeLong(loc, this.eventsRowCount, col.codec);
   }
 
   readEventDouble(name: string): Float64Array {
     const [idx, col] = this.findColumn(this.eventColumns, name);
     const loc = this.eventLocs[idx];
+    this.verifyCrc(loc, this.eventCrcs, idx, name);
     return this.decodeDouble(loc, this.eventsRowCount, col.codec);
   }
 
   readEventBinary(name: string): (Uint8Array | null)[] {
     const [idx] = this.findColumn(this.eventColumns, name);
     const loc = this.eventLocs[idx];
+    this.verifyCrc(loc, this.eventCrcs, idx, name);
     return decodeVarlen(this.data.subarray(loc.pos, loc.pos + loc.len), this.eventsRowCount);
   }
 
@@ -152,6 +200,7 @@ export class ReefReader {
   async readEventBinaryAsync(name: string): Promise<(Uint8Array | null)[]> {
     const [idx] = this.findColumn(this.eventColumns, name);
     const loc = this.eventLocs[idx];
+    this.verifyCrc(loc, this.eventCrcs, idx, name);
     return decodeVarlenAsync(this.data.subarray(loc.pos, loc.pos + loc.len), this.eventsRowCount);
   }
 
@@ -166,6 +215,17 @@ export class ReefReader {
   }
 
   // --- Internal ---
+
+  private verifyCrc(loc: ColumnLocation, crcs: number[], idx: number, name: string): void {
+    if (!this.hasChecksums || idx >= crcs.length) return;
+    const colData = this.data.subarray(loc.pos, loc.pos + loc.len);
+    const actual = crc32(colData);
+    if (actual !== crcs[idx]) {
+      throw new Error(
+        `CRC32 mismatch on column '${name}': expected 0x${crcs[idx].toString(16).padStart(8, '0')}, got 0x${actual.toString(16).padStart(8, '0')}`,
+      );
+    }
+  }
 
   private decodeLong(loc: ColumnLocation, count: number, codec: Codec): Float64Array {
     const colData = this.data.subarray(loc.pos, loc.pos + loc.len);
@@ -227,4 +287,23 @@ export class ReefReader {
     if (idx < 0) throw new Error(`Column not found: ${name}`);
     return [idx, columns[idx]];
   }
+}
+
+// --- CRC32 (IEEE 802.3, same as java.util.zip.CRC32) ---
+
+const CRC_TABLE = new Uint32Array(256);
+for (let i = 0; i < 256; i++) {
+  let c = i;
+  for (let j = 0; j < 8; j++) {
+    c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  }
+  CRC_TABLE[i] = c;
+}
+
+function crc32(data: Uint8Array): number {
+  let crc = 0xffffffff;
+  for (let i = 0; i < data.length; i++) {
+    crc = CRC_TABLE[(crc ^ data[i]) & 0xff] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
 }
