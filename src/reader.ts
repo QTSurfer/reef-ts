@@ -29,7 +29,7 @@ interface ColumnLocation {
 /**
  * Lastra file reader for TypeScript/JavaScript.
  *
- * Reads `.lastra` files written by the Java ReefWriter.
+ * Reads `.lastra` files written by the Java LastraWriter.
  * Supports selective column access — only requested columns are decompressed.
  * Verifies per-column CRC32 checksums when present (FLAG_HAS_CHECKSUMS).
  *
@@ -69,7 +69,7 @@ export class LastraReader {
     const version = this.view.getUint16(pos, true);
     pos += 2;
     if (version > 1) {
-      throw new Error(`Unsupported Reef version: ${version}`);
+      throw new Error(`Unsupported Lastra version: ${version}`);
     }
     const flags = this.view.getUint16(pos, true);
     pos += 2;
