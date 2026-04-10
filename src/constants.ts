@@ -30,3 +30,4 @@ export enum Codec {
 export const FLAG_HAS_EVENTS = 1;
 export const FLAG_HAS_FOOTER = 1 << 1;
 export const FLAG_HAS_CHECKSUMS = 1 << 2;
+export const FLAG_HAS_ROW_GROUPS = 1 << 3;
