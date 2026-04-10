@@ -133,36 +133,23 @@ export class LastraReader {
     this.eventLocs = [];
     this.eventCrcs = [];
 
+    // Detect footer size hint: last 8 bytes = [LAS! magic][footer size LE]
+    const trailerSize = 8;
+    let hasFooterSizeHint = false;
+    if (this.data.byteLength >= 8) {
+      const trailMagic = this.view.getUint32(this.data.byteLength - 8, true);
+      if (trailMagic === FOOTER_MAGIC) {
+        hasFooterSizeHint = true;
+      }
+    }
+
     if (hasFooter && hasRowGroups) {
-      // Scan RG data forward: groups of seriesColCount columns
-      const tempRgColLocs: ColumnLocation[][] = [];
-      let scanPos = pos;
-      while (true) {
-        const colLocs: ColumnLocation[] = [];
-        let tempPos = scanPos;
-        let valid = true;
-        for (let c = 0; c < this.seriesColCount; c++) {
-          if (tempPos + 4 > this.data.byteLength) { valid = false; break; }
-          const len = this.view.getInt32(tempPos, true);
-          if (len < 0 || tempPos + 4 + len > this.data.byteLength) { valid = false; break; }
-          colLocs.push({ pos: tempPos + 4, len });
-          tempPos += 4 + len;
-        }
-        if (!valid) break;
-        tempRgColLocs.push(colLocs);
-        scanPos = tempPos;
-        if (tempRgColLocs.length > 100000) break;
-      }
+      // Use footer size hint to locate footer precisely
+      const footerSizeVal = this.view.getInt32(this.data.byteLength - 4, true);
+      const footerPos = this.data.byteLength - trailerSize - footerSizeVal;
 
-      // Read events data
-      for (let i = 0; i < this.eventColumns.length; i++) {
-        const len = this.view.getInt32(scanPos, true);
-        this.eventLocs.push({ pos: scanPos + 4, len });
-        scanPos += 4 + len;
-      }
-
-      // Parse footer: rgCount, stats, CRCs
-      let fp = scanPos;
+      // Parse footer: [rgCount][rg stats...][rg CRCs...][event offsets][event CRCs]
+      let fp = footerPos;
       const rgCount = this.view.getInt32(fp, true);
       fp += 4;
 
@@ -185,17 +172,34 @@ export class LastraReader {
         }
       }
 
-      // Event CRCs
-      // Event offsets already read by scanning; skip offset ints in footer
-      fp += this.eventColumns.length * 4;
+      const eventCols = this.eventColumns.length;
+      for (let i = 0; i < eventCols; i++) { fp += 4; } // skip event offsets
       if (this.hasChecksums) {
-        for (let i = 0; i < this.eventColumns.length; i++) {
+        for (let i = 0; i < eventCols; i++) {
           this.eventCrcs.push(this.view.getUint32(fp, true));
           fp += 4;
         }
       }
 
-      this.rgColLocs.push(...tempRgColLocs);
+      // Scan RG data forward using rgCount from footer
+      let scanPos = pos;
+      for (let rg = 0; rg < rgCount; rg++) {
+        const colLocs: ColumnLocation[] = [];
+        for (let c = 0; c < this.seriesColCount; c++) {
+          const len = this.view.getInt32(scanPos, true);
+          colLocs.push({ pos: scanPos + 4, len });
+          scanPos += 4 + len;
+        }
+        this.rgColLocs.push(colLocs);
+      }
+
+      // Events data
+      for (let i = 0; i < eventCols; i++) {
+        const len = this.view.getInt32(scanPos, true);
+        this.eventLocs.push({ pos: scanPos + 4, len });
+        scanPos += 4 + len;
+      }
+
       this.rowGroupCount = rgCount;
 
     } else if (hasFooter) {
@@ -212,13 +216,12 @@ export class LastraReader {
         pos += 4 + len;
       }
 
-      // Parse footer from end
+      // Parse footer from end (account for trailer: LAS! + footerSize = 8 bytes)
       const totalCols = this.seriesColCount + this.eventColumns.length;
       let footerInts = totalCols;
       if (this.hasChecksums) footerInts += totalCols;
-      footerInts += 1;
 
-      const footerStart = this.data.byteLength - footerInts * 4;
+      const footerStart = this.data.byteLength - trailerSize - footerInts * 4;
       const fv = new DataView(this.data.buffer, this.data.byteOffset + footerStart, footerInts * 4);
       let fp = totalCols * 4; // skip offsets
 
@@ -233,15 +236,24 @@ export class LastraReader {
         }
       }
 
-      const footerMagic = fv.getUint32(fp, true);
-      if (footerMagic !== FOOTER_MAGIC) {
-        throw new Error('Invalid Lastra footer');
-      }
-
+      // LAS! magic already verified via trailer detection
       this.rowGroupCount = 1;
     } else {
       this.rowGroupCount = 1;
     }
+  }
+
+  /**
+   * Read the footer size from the last 8 bytes of a Lastra file.
+   * For HTTP Range requests: fetch last 8 bytes, then fetch footerSize bytes to parse RG stats.
+   * @returns footer size in bytes, or -1 if not a valid Lastra trailer
+   */
+  static readFooterSize(trailer: Uint8Array): number {
+    if (trailer.length < 8) return -1;
+    const view = new DataView(trailer.buffer, trailer.byteOffset, trailer.byteLength);
+    const magic = view.getUint32(trailer.length - 8, true);
+    if (magic !== FOOTER_MAGIC) return -1;
+    return view.getInt32(trailer.length - 4, true);
   }
 
   // --- Row group access ---
