@@ -11,7 +11,7 @@ TypeScript reader for the [Reef](https://github.com/QTSurfer/reef-java) columnar
 - Read `.reef` files written by the [Java ReefWriter](https://github.com/QTSurfer/reef-java)
 - Selective column access — only requested columns are decompressed
 - Built-in decoders: ALP, Gorilla, Pongo (doubles), delta-varint (timestamps), ZSTD/gzip (binary)
-- ~4 kB total bundle overhead (only dependency: [`fzstd`](https://www.npmjs.com/package/fzstd) for ZSTD)
+- **Apache Arrow interop** — convert to Arrow Table for use with DuckDB-WASM, Perspective, Arquero, etc.
 - Browser + Node.js compatible
 - Zero-copy `Float64Array` output for decoded doubles
 
@@ -93,6 +93,29 @@ interface ColumnInfo {
 | `VARLEN_ZSTD` | BINARY | Variable-length + ZSTD | ~3.8 kB gz |
 | `VARLEN_GZIP` | BINARY | Variable-length + gzip (async, native `DecompressionStream`) | 0 kB |
 | `RAW` | LONG/DOUBLE | Uncompressed / `Float64Array` zero-copy | 0 kB |
+
+## Arrow Interop
+
+Convert Reef data to an Apache Arrow Table for integration with any Arrow-compatible tool.
+
+```typescript
+import { ReefReader, reefToArrow, reefToArrowColumns } from '@qtsurfer/reef';
+
+const buffer = await fetch('/data/btc-1h.reef').then(r => r.arrayBuffer());
+const reader = new ReefReader(buffer);
+
+// All series columns
+const table = reefToArrow(reader);
+
+// Selected columns only (others are not decompressed)
+const partial = reefToArrowColumns(reader, ['t', 'cls', 'vol']);
+
+// One-liner: buffer → Arrow Table
+import { readReefAsArrow } from '@qtsurfer/reef';
+const table2 = readReefAsArrow(buffer);
+```
+
+The resulting Arrow Table can be registered in DuckDB-WASM, used with Perspective, Arquero, Observable Plot, or any tool that accepts Arrow IPC.
 
 ## Cross-Language Testing
 
