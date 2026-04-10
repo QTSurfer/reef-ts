@@ -1,6 +1,6 @@
 {
   "name": "@qtsurfer/reef",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "TypeScript reader for the Reef columnar time series format",
   "license": "Apache-2.0",
   "author": "QTSurfer (https://github.com/QTSurfer)",
@@ -26,6 +26,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "apache-arrow": "^21.1.0",
     "fzstd": "^0.1.1"
   },
   "devDependencies": {
