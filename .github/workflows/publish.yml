@@ -7,7 +7,7 @@ on:
 
 jobs:
   publish:
-    if: github.repository == 'QTSurfer/reef-ts'
+    if: github.repository == 'QTSurfer/lastra-ts'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -36,10 +36,10 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           gh release create "$GITHUB_REF_NAME" \
             --title "$GITHUB_REF_NAME" \
-            --notes "## @qtsurfer/reef@${VERSION}
+            --notes "## @qtsurfer/lastra@${VERSION}
 
-          **npm:** [\`@qtsurfer/reef@${VERSION}\`](https://www.npmjs.com/package/@qtsurfer/reef/v/${VERSION})
-          **Install:** \`npm install @qtsurfer/reef@${VERSION}\`" \
+          **npm:** [\`@qtsurfer/lastra@${VERSION}\`](https://www.npmjs.com/package/@qtsurfer/lastra/v/${VERSION})
+          **Install:** \`npm install @qtsurfer/lastra@${VERSION}\`" \
             || echo "Release already exists"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
