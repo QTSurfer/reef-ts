@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 420 132"
+   fill="none"
+   version="1.1"
+   id="svg21"
+   width="420"
+   height="132"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10">
+    <linearGradient
+       id="g1"
+       x1="0"
+       y1="3.0550506"
+       x2="0"
+       y2="39.715656"
+       gradientTransform="scale(0.38188131,2.6186147)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0%"
+         stop-color="#6366f1"
+         id="stop1" />
+      <stop
+         offset="100%"
+         stop-color="#4f46e5"
+         id="stop2" />
+    </linearGradient>
+    <linearGradient
+       id="g2"
+       x1="0"
+       y1="0"
+       x2="0"
+       y2="1">
+      <stop
+         offset="0%"
+         stop-color="#818cf8"
+         id="stop3" />
+      <stop
+         offset="100%"
+         stop-color="#6366f1"
+         id="stop4" />
+    </linearGradient>
+    <linearGradient
+       id="g3"
+       x1="0"
+       y1="0"
+       x2="0"
+       y2="1">
+      <stop
+         offset="0%"
+         stop-color="#a5b4fc"
+         id="stop5" />
+      <stop
+         offset="100%"
+         stop-color="#818cf8"
+         id="stop6" />
+    </linearGradient>
+    <linearGradient
+       id="g4"
+       x1="186.3177"
+       y1="21.254019"
+       x2="186.3177"
+       y2="50.236774"
+       gradientTransform="scale(0.48304589,2.0701967)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0%"
+         stop-color="#c7d2fe"
+         id="stop7" />
+      <stop
+         offset="100%"
+         stop-color="#a5b4fc"
+         id="stop8" />
+    </linearGradient>
+    <linearGradient
+       id="gt"
+       x1="61.885647"
+       y1="92.100494"
+       x2="171.9007"
+       y2="92.100494"
+       gradientTransform="scale(2.3551819,0.42459565)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0%"
+         stop-color="#4f46e5"
+         id="stop9" />
+      <stop
+         offset="100%"
+         stop-color="#6366f1"
+         id="stop10" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#g2"
+       id="linearGradient21"
+       x1="43.028229"
+       y1="10.03992"
+       x2="43.028229"
+       y2="43.506321"
+       gradientTransform="scale(0.41833001,2.3904572)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       xlink:href="#g2"
+       id="linearGradient22"
+       x1="90.256775"
+       y1="6.3817921"
+       x2="90.256775"
+       y2="41.481651"
+       gradientTransform="scale(0.39886202,2.5071327)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       xlink:href="#g3"
+       id="linearGradient23"
+       x1="122.46049"
+       y1="14.110674"
+       x2="122.46049"
+       y2="45.859688"
+       gradientTransform="scale(0.44095855,2.2677868)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       xlink:href="#g3"
+       id="linearGradient24"
+       x1="176.36327"
+       y1="8.1649656"
+       x2="176.36327"
+       y2="42.457821"
+       gradientTransform="scale(0.40824829,2.4494897)"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <!-- Columnar icon: 5 columns with varying heights representing compression -->
+  <g
+     transform="translate(16,18)"
+     id="g20">
+    <!-- Column 1 - ts (tallest, delta-varint) -->
+    <rect
+       x="0"
+       y="8"
+       width="14"
+       height="96"
+       rx="3"
+       fill="url(#g1)"
+       id="rect10"
+       style="fill:url(#g1)" />
+    <!-- Column 2 - open (ALP compressed) -->
+    <rect
+       x="18"
+       y="24"
+       width="14"
+       height="80"
+       rx="3"
+       fill="url(#g2)"
+       id="rect11"
+       style="fill:url(#linearGradient21)" />
+    <!-- Column 3 - high -->
+    <rect
+       x="36"
+       y="16"
+       width="14"
+       height="88"
+       rx="3"
+       fill="url(#g2)"
+       id="rect12"
+       style="fill:url(#linearGradient22)" />
+    <!-- Column 4 - low -->
+    <rect
+       x="54"
+       y="32"
+       width="14"
+       height="72"
+       rx="3"
+       fill="url(#g3)"
+       id="rect13"
+       style="fill:url(#linearGradient23)" />
+    <!-- Column 5 - close -->
+    <rect
+       x="72"
+       y="20"
+       width="14"
+       height="84"
+       rx="3"
+       fill="url(#g3)"
+       id="rect14"
+       style="fill:url(#linearGradient24)" />
+    <!-- Column 6 - volume (shorter = better compression) -->
+    <rect
+       x="90"
+       y="44"
+       width="14"
+       height="60"
+       rx="3"
+       fill="url(#g4)"
+       id="rect15"
+       style="fill:url(#g4)" />
+    <!-- Compression arrows (small chevrons between columns) -->
+    <path
+       d="m 10,108 v 4 l -3,-2 z"
+       fill="#4f46e5"
+       opacity="0.5"
+       id="path15" />
+    <path
+       d="m 28,108 v 4 l -3,-2 z"
+       fill="#4f46e5"
+       opacity="0.5"
+       id="path16" />
+    <path
+       d="m 46,108 v 4 l -3,-2 z"
+       fill="#4f46e5"
+       opacity="0.5"
+       id="path17" />
+    <path
+       d="m 64,108 v 4 l -3,-2 z"
+       fill="#4f46e5"
+       opacity="0.5"
+       id="path18" />
+    <path
+       d="m 82,108 v 4 l -3,-2 z"
+       fill="#4f46e5"
+       opacity="0.5"
+       id="path19" />
+    <path
+       d="m 100,108 v 4 l -3,-2 z"
+       fill="#4f46e5"
+       opacity="0.5"
+       id="path20" />
+  </g>
+  <!-- Text: LASTRA -->
+  <text
+     x="140"
+     y="85"
+     font-family="system-ui, '-apple-system', 'Segoe UI', sans-serif"
+     font-size="62px"
+     font-weight="700"
+     letter-spacing="-1"
+     fill="url(#gt)"
+     id="text20"
+     style="fill:url(#gt)">LASTRA</text>
+  <!-- Subtitle -->
+  <text
+     x="150.07692"
+     y="113.92308"
+     font-family="system-ui, '-apple-system', 'Segoe UI', sans-serif"
+     font-size="15px"
+     font-weight="400"
+     letter-spacing="3"
+     fill="#64748b"
+     id="text21">COLUMNAR TIME SERIES</text>
+</svg>

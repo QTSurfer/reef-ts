@@ -1,10 +1,18 @@
-# @qtsurfer/lastra
+<p align="center">
+  <img src="logo.svg" alt="Lastra" width="420">
+</p>
 
-[![CI](https://github.com/QTSurfer/lastra-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/QTSurfer/lastra-ts/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/@qtsurfer/lastra)](https://www.npmjs.com/package/@qtsurfer/lastra)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+<p align="center">
+  <a href="https://github.com/QTSurfer/lastra-ts/actions/workflows/ci.yml"><img src="https://github.com/QTSurfer/lastra-ts/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://www.npmjs.com/package/@qtsurfer/lastra"><img src="https://img.shields.io/npm/v/@qtsurfer/lastra" alt="npm"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
+</p>
 
-TypeScript reader for the [Lastra](https://github.com/QTSurfer/lastra-java) columnar time series format.
+<p align="center">
+  TypeScript reader for the <a href="https://github.com/QTSurfer/lastra-java">Lastra</a> columnar time series format.
+</p>
+
+---
 
 ## Features
 
